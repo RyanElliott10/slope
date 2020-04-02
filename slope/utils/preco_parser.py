@@ -2,7 +2,7 @@ from enum import Enum
 
 import pandas as pd
 
-from slope.utils.setter import setter
+from slope.utils.decorators import setter
 
 
 class PreCoFileType(Enum):
@@ -21,8 +21,30 @@ class PrecoParser(object):
         self.singletons = singletons
         self.df = pd.read_json(self.filepath, lines=True, encoding='ascii')
 
-    def data(self):
+    def data(self) -> pd.DataFrame:
+        if not self.singletons:
+            self._filter_singleton()
         return self.df
+
+    def _filter_singleton(self):
+        filtered = list()
+        for mentions in self.df.mention_clusters:
+            filtered.append([clusters for clusters in mentions if len(clusters) > 1])
+
+        self.df.mention_clusters = filtered
+
+    def debug_ents(self, num: int = None, show_sent: bool = False):
+        ''' Prints clusters of `num` datapoints. '''
+        sents = self.df.sentences
+        mention_clusters = self.df.mention_clusters
+        for i, sent in enumerate(sents[:num]):
+            if show_sent:
+                print(sent)
+            print('*****\t  Clusters\t*****\n')
+            ent = list()
+            for cluster in mention_clusters[i]:
+                ent = [' '.join(sent[sent_idx][start:end]) for sent_idx, start, end in cluster]
+                print(ent)
 
     @setter
     def file_type(self, f: PreCoFileType):
@@ -30,12 +52,12 @@ class PrecoParser(object):
         self.df = pd.read_json(self.filepath, lines=True, encoding='ascii')
 
     @property
-    def filepath(self):
+    def filepath(self) -> str:
         return f'../data/preco/{self.file_type}'
 
 
 if __name__ == '__main__':
-    parser = PrecoParser(PreCoFileType.DEV)
-    print(parser.data().shape)
-    parser.file_type = PreCoFileType.TRAIN
-    print(parser.data().shape)
+    parser = PrecoParser(PreCoFileType.DEV, singletons=False)
+    data = parser.data()
+    print(data.columns)
+    parser.debug_ents(num=1, show_sent=False)
