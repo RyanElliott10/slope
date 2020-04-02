@@ -40,7 +40,7 @@ class PrecoParser(object):
         for i, sent in enumerate(sents[:num]):
             if show_sent:
                 print(sent)
-            print('*****\t  Clusters\t*****\n')
+            print('********\tClusters\t********\n')
             ent = list()
             for cluster in mention_clusters[i]:
                 ent = [' '.join(sent[sent_idx][start:end]) for sent_idx, start, end in cluster]
