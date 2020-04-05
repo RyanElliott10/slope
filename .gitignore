@@ -1,5 +1,6 @@
 # MacOS
 *.DS_Store
+*.npy
 data/
 
 # Byte-compiled / optimized / DLL files

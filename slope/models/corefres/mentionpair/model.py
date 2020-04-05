@@ -1,4 +1,10 @@
-import torch
+# -*- coding: utf-8 -*-
+# Neural network for Mention Pair coreference model.
+#
+# Author: Ryan Elliott <ryan.elliott31@gmail.com>
+#
+# For license information, see LICENSE
+
 import torch.functional as F
 import torch.nn as nn
 

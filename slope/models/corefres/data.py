@@ -5,9 +5,9 @@ PRETRAINED_WEIGHTS = 'bert-base-uncased'
 
 
 class DataLoader(object):
-    '''
+    """
     Coreference resloution data loading class. Accepts raw data from Parsing classes.
-    '''
+    """
 
     def __init__(self, data=''):
         self.bert_tokenizer = BertTokenizer.from_pretrained(PRETRAINED_WEIGHTS)
@@ -15,25 +15,25 @@ class DataLoader(object):
 
     @classmethod
     def from_preco(cls, raw_data):
-        '''
+        """
         Parses raw PreCo data into the common format.
-        '''
+        """
         return cls()
 
     @classmethod
     def from_conll(cls, raw_data):
-        '''
+        """
         Parses raw CoNLL data into the common format.
-        '''
+        """
         return cls()
 
     def _encode(self, doc: str) -> torch.Tensor:
         return self.bert_tokenizer.encode(doc, add_special_tokens=True, return_tensors='pt')
 
     def tokenize(self, doc: str) -> torch.Tensor:
-        '''
+        """
         Accepts a doc (non-tokenized string) and returns the word encoddings.
-        '''
+        """
         # TODO make this more efficient by batching the encodings and predictions
         input_ids = self._encode(doc)
         with torch.no_grad():

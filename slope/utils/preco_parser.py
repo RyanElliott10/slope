@@ -1,7 +1,13 @@
+# -*- coding: utf-8 -*-
+# PreCo coreference resolution dataset parser.
+#
+# Author: Ryan Elliott <ryan.elliott31@gmail.com>
+#
+# For license information, see LICENSE
+
 from enum import Enum
 
 import pandas as pd
-from pandas import DataFrame, read_json
 
 from slope.utils.decorators import setter
 
@@ -12,17 +18,17 @@ class PreCoFileType(Enum):
 
 
 class PreCoParser(object):
-    '''
+    """
     Parses data from PreCo formatted files. Allows filtration of mentions on the number of referents
     are associated with a given mention.
-    '''
+    """
 
     def __init__(self, file_type: PreCoFileType, singletons: bool = True):
         self.file_type = file_type
         self.singletons = singletons
-        self.df = read_json(self.filepath, lines=True, encoding='ascii')
+        self.df = pd.read_json(self.filepath, lines=True, encoding='ascii')
 
-    def data(self) -> DataFrame:
+    def data(self) -> pd.DataFrame:
         if not self.singletons:
             self._filter_singleton()
         return self.df
@@ -35,7 +41,7 @@ class PreCoParser(object):
         self.df.mention_clusters = filtered
 
     def debug_ents(self, num: int = None, show_sent: bool = False):
-        ''' Prints clusters of `num` datapoints. '''
+        """ Prints clusters of `num` datapoints. """
         sents = self.df.sentences
         mention_clusters = self.df.mention_clusters
         for i, sent in enumerate(sents[:num]):
@@ -50,7 +56,7 @@ class PreCoParser(object):
     @setter
     def file_type(self, f: PreCoFileType):
         vars(self)['file_type'] = f.value
-        self.df = read_json(self.filepath, lines=True, encoding='ascii')
+        self.df = pd.read_json(self.filepath, lines=True, encoding='ascii')
 
     @property
     def filepath(self) -> str:
