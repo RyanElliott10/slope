@@ -1,6 +1,7 @@
 from enum import Enum
 
 import pandas as pd
+from pandas import DataFrame, read_json
 
 from slope.utils.decorators import setter
 
@@ -10,7 +11,7 @@ class PreCoFileType(Enum):
     TRAIN = 'train.json'
 
 
-class PrecoParser(object):
+class PreCoParser(object):
     '''
     Parses data from PreCo formatted files. Allows filtration of mentions on the number of referents
     are associated with a given mention.
@@ -19,9 +20,9 @@ class PrecoParser(object):
     def __init__(self, file_type: PreCoFileType, singletons: bool = True):
         self.file_type = file_type
         self.singletons = singletons
-        self.df = pd.read_json(self.filepath, lines=True, encoding='ascii')
+        self.df = read_json(self.filepath, lines=True, encoding='ascii')
 
-    def data(self) -> pd.DataFrame:
+    def data(self) -> DataFrame:
         if not self.singletons:
             self._filter_singleton()
         return self.df
@@ -49,7 +50,7 @@ class PrecoParser(object):
     @setter
     def file_type(self, f: PreCoFileType):
         vars(self)['file_type'] = f.value
-        self.df = pd.read_json(self.filepath, lines=True, encoding='ascii')
+        self.df = read_json(self.filepath, lines=True, encoding='ascii')
 
     @property
     def filepath(self) -> str:
@@ -57,7 +58,5 @@ class PrecoParser(object):
 
 
 if __name__ == '__main__':
-    parser = PrecoParser(PreCoFileType.DEV, singletons=False)
+    parser = PreCoParser(PreCoFileType.DEV, singletons=False)
     data = parser.data()
-    print(data.columns)
-    parser.debug_ents(num=1, show_sent=False)
