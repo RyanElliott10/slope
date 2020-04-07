@@ -92,10 +92,10 @@ class Word2VecEmbedding:
         return embeddings
 
     @staticmethod
-    def avg_embed(embeddings: List[torch.Tensor]) -> torch.Tensor:
-        if len(embeddings) == 0:
+    def avg_embed(embeddings: List[torch.Tensor], start: int, end: int) -> torch.Tensor:
+        if len(embeddings) == 0 or len(embeddings) < end:
             return torch.zeros(EMBEDDING_DIM)
-        cummu = embeddings[0]
-        for embed in embeddings[1:]:
+        cummu = embeddings[start]
+        for embed in embeddings[start:end]:
             cummu += embed
-        return cummu / len(embeddings)
+        return cummu / end - start

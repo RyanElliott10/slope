@@ -10,16 +10,19 @@ import pprint
 from itertools import combinations, product
 from typing import List, Tuple
 
+import spacy
 import torch
 from progress.bar import IncrementalBar
 
 from slope.utils.embeddings.w2v_embeddings import Word2VecEmbedding
 from slope.utils.nnmodel import NNModel
 from slope.utils.preco_parser import PreCoFileType, PreCoParser
+from slope.utils.utils import tokenized_spacy_doc
 
 MentionIndices = List[int]
 RawMentionClusters = List[List[MentionIndices]]
 
+nlp = spacy.load('en_core_web_sm')
 pp = pprint.PrettyPrinter()
 
 
@@ -48,6 +51,7 @@ class MentionPair(NNModel):
     def sent_embeds(self) -> Tuple[List[torch.Tensor], List[torch.Tensor]]:
         if self._sent_embeds:
             return self._sent_embeds
+
         w2v = Word2VecEmbedding.inst()
         self._sent_embeds = (w2v.embed_sent(self.sents[0]), w2v.embed_sent(self.sents[1]))
         return self._sent_embeds
@@ -59,23 +63,36 @@ class MentionPair(NNModel):
         turning this into __call__
         """
         i_embeds, j_embeds = self.sent_embeds
-        ifirst_embed, ilast_embed, iavg = MentionPair._mention_features(i_embeds, self.i_indices)
-        jfirst_embed, jlast_embed, javg = MentionPair._mention_features(j_embeds, self.j_indices)
-        print(ifirst_embed, ilast_embed, iavg)
-        print(jfirst_embed, jlast_embed, javg)
+        ifirst_embed, ilast_embed, iavg, dep = MentionPair._mention_features(
+            i_embeds, self.i_indices, self.sents[0])
+        jfirst_embed, jlast_embed, javg, dep = MentionPair._mention_features(
+            j_embeds, self.j_indices, self.sents[1])
+
+        # MentionPair._mention_features(None, self.i_indices, self.sents[0])
+        # MentionPair._mention_features(None, self.j_indices, self.sents[1])
 
     def _mention_relation_features(self):
         pass
 
     @staticmethod
-    # def _mention_features(embeds: List[torch.Tensor],
-    #                       indices: MentionIndices) -> torch.Tensor, torch.Tensor, torch.Tensor:
-    def _mention_features(embeds: List[torch.Tensor],
-                          indices: MentionIndices) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    def _mention_features(embeds: List[torch.Tensor], indices: MentionIndices, sent: List[str]):
+        """
+        Return type ommited for brevity.
+        """
         first_embed = embeds[indices[1]]
-        last_embed = embeds[indices[2]]
-        avg = Word2VecEmbedding.avg_embed(embeds)
-        return first_embed, last_embed, avg
+        last_embed = embeds[indices[2]-1]
+        avg = Word2VecEmbedding.avg_embed(embeds, indices[1], indices[2])
+
+        doc = tokenized_spacy_doc(sent)
+        dep = None
+        for chunk in doc.noun_chunks:
+            if chunk.start == indices[1] and chunk.end == indices[2]:
+                dep = chunk.root.dep_
+                break
+            elif chunk.start <= indices[1] and chunk.end >= indices[2]:
+                dep = chunk.root.dep_
+
+        return first_embed, last_embed, avg, dep
 
     @staticmethod
     def _context_features(embeds: List[torch.Tensor], indices: MentionIndices):
@@ -97,7 +114,7 @@ class MentionPairDataLoader(object):
     def __init__(self, filetype: PreCoFileType, singletons: bool):
         parser = PreCoParser(filetype, singletons=singletons)
         self.parsed_data = parser.data()
-        self.data = None
+        self.data = []
         self.preprocess()
 
     def preprocess(self):
@@ -123,7 +140,7 @@ class MentionPairDataLoader(object):
         combinatory matrix (of types) to produce true training data.
         """
         combs: List[MentionPair] = []
-        for i, value in enumerate(clusters[:2]):
+        for i, value in enumerate(clusters):
             for j, sec in enumerate(clusters[i:]):
                 if j == 0:
                     # The "value" itself; coreferents
@@ -138,8 +155,7 @@ class MentionPairDataLoader(object):
         """
         Converts self.data into true training data (i.e. xtrain, ytrain, xtest, ytest)
         """
-        # self.data[0].nn_format
-        [el.nn_format for el in self.data]
+        self.data[0].nn_format
 
     def __len__(self):
         return len(self.data)
