@@ -22,7 +22,7 @@ VERSION = '0.1.0'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    'spacy', 'spacy-transformers'
+    'spacy', 'spacy-transformers', 'pandas', 'transformers', 'torch', 'numpy'
 ]
 
 # What packages are optional?

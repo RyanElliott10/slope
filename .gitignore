@@ -2,6 +2,11 @@
 *.DS_Store
 *.npy
 data/
+models/
+references/
+reports/
+*.idea
+slope-outline.md
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -119,7 +119,7 @@ class MentionPairDataLoader(object):
 
     def preprocess(self):
         """
-        Converts parsed datga into training data.
+        Converts parsed data into training data.
         """
         np_data = self.parsed_data.to_numpy()
         print(len(np_data))

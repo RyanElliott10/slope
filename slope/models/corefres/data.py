@@ -6,7 +6,7 @@ PRETRAINED_WEIGHTS = 'bert-base-uncased'
 
 class DataLoader(object):
     """
-    Coreference resloution data loading class. Accepts raw data from Parsing classes.
+    Coreference resolution data loading class. Accepts raw data from Parsing classes.
     """
 
     def __init__(self, data=''):
@@ -32,7 +32,7 @@ class DataLoader(object):
 
     def tokenize(self, doc: str) -> torch.Tensor:
         """
-        Accepts a doc (non-tokenized string) and returns the word encoddings.
+        Accepts a doc (non-tokenized string) and returns the word encodings.
         """
         # TODO make this more efficient by batching the encodings and predictions
         input_ids = self._encode(doc)
